@@ -7,6 +7,8 @@ import { join } from 'node:path';
 
 const PO = [0, 0, 0, 1, 1, 2, 2, 3]; // pops for opcodes 0..7
 const PU = [0, 1, 1, 0, 2, 2, 3, 3]; // pushes for opcodes 0..7
+const VALID = new Uint8Array(256); // known-opcode table, built once
+for (let o = 0; o < 256; o++) VALID[o] = o < 8 || (o >= 16 && o <= 30) || (o >= 32 && o <= 34) || (o >= 48 && o <= 52) || o == 64 || o == 65 || (o >= 80 && o <= 83) ? 1 : 0;
 
 function run(P, I) {
   const D = new Int32Array(256), C = new Int32Array(64), M = new Int32Array(256), O = new Uint8Array(65536);
@@ -17,7 +19,7 @@ function run(P, I) {
       if (st == 1000000) throw 10;
       if (pc < 0 || pc >= n) throw 9;
       const op = P[pc];
-      if (!(op < 8 || (op >= 16 && op <= 30) || (op >= 32 && op <= 34) || (op >= 48 && op <= 52) || op == 64 || op == 65 || (op >= 80 && op <= 83))) throw 5;
+      if (!VALID[op]) throw 5;
       const im = op == 1 ? 1 : op == 2 ? 4 : op >= 48 && op <= 51 ? 2 : 0;
       if (pc + im >= n) throw 9;
       st++;
